@@ -27,8 +27,8 @@ def arnoldi(A, u, m):
     n = len(u)
 
     # Initialise the orthonormal basis and the upper Hessenberg matrix
-    Q = np.zeros((n, m + 1), dtype=complex)
-    H = np.zeros((m + 1, m), dtype=complex)
+    Q = np.zeros((n, m + 1))
+    H = np.zeros((m + 1, m))
 
     # Normalise the intial vector to create the first basis vector
     Q[:, 0] = u / np.linalg.norm(u)
@@ -36,7 +36,7 @@ def arnoldi(A, u, m):
     # Constructing the Krlov subspace
     for j in range(m):
 
-        # Construct the next basis vector (i.e., A * q_j)
+        # Construct the next basis vector (i.e., A * Q_j)
         Q[:, j + 1] = A @ Q[:, j]
 
         # Orthogonalise the new basis vector against the previous ones
