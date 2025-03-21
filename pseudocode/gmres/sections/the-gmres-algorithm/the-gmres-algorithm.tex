@@ -1,10 +1,37 @@
 \section{The GMRES Algorithm}
 
-We present the pseudocode of the serial implementation of the GMRES algorithm:
+We present the pseudocode of the GMRES algorithm as is given in \citet{arnoldi2025lab} with some minor adjustments:
 
 \begin{algorithm}[H]
     \begin{algorithmic}
         \Procedure{gmres}{$A,b,m$}
+        \State Ensure $A$ is a function that applies the matrix to a vector
+        \State$n\gets\text{length}(b)$
+        \State$Q\gets\text{zeros}(n,m+1)$
+        \State$H\gets\text{zeros}(m+1,m)$
+        \State$x_0\gets\text{zeros}(n)$
+        \State$r_0\gets b-A(x_0)$
+        \State$\beta\gets\|r_0\|_2$
+        \State$Q[:,0]\gets r_0/\beta$
+        \State$residuals\gets[\beta]$
+        \For{$j=0$ to $m-1$}
+        \State$q\gets A(Q[:,j])$
+        \For{$i=0$ to $j$}
+        \State$H[i,j]\gets Q[:,i]^T\cdot q$
+        \State$q\gets q-H[i,j]\cdot Q[:,i]$
+        \EndFor
+        \State$H[j+1,j]\gets\|q\|_2$
+        \If{$H[j+1,j]>10^{-12}$}
+        \State$Q[:,j+1]\gets q/H[j+1,j]$
+        \EndIf
+        \State$e_1\gets\text{zeros}(j+2)$
+        \State$e_1[0]\gets\beta$
+        \State Solve the least squares problem $\min\|H[0:j+2,0:j+1]y-e_1\|_2$ for $y$
+        \State$res\gets\|\beta e_1-H[0:j+2,0:j+1]\cdot y\|_2$
+        \State$residuals.\text{append}(res)$
+        \EndFor
+        \State$x\gets x_0+Q[:,0:m]\cdot y$
+        \State\Return$x,\text{array}(residuals)$
         \EndProcedure
     \end{algorithmic}
 \end{algorithm}
