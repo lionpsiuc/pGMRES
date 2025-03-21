@@ -6,13 +6,13 @@ We present the pseudocode of the Arnoldi iteration algorithm exactly (without th
     \begin{algorithmic}
         \Procedure{arnoldi}{$A,u,m$}
         \State$n\gets\text{length}(u)$
-        \State$Q\gets\text{zeros}(n,m+1),\text{with }\verb|dtype=complex|$\Comment{Initialise matrix to hold orthonormal basis vectors}
-        \State$H\gets\text{zeros}(m+1,m),\text{with }\verb|dtype=complex|$\Comment{Initialise Hessenberg matrix}
+        \State$Q\gets\text{zeros}(n,m+1)$\Comment{Initialise matrix to hold orthonormal basis vectors}
+        \State$H\gets\text{zeros}(m+1,m)$\Comment{Initialise Hessenberg matrix}
         \State$Q[:,0]\gets u/\|u\|_2$
         \For{$j=0$ to $m-1$}
         \State$Q[:,j+1]\gets A\cdot Q[:,j]$
         \For{$i=0$ to $j$}
-        \State$H[i,j]\gets\langle Q[:,i],Q[:,j+1]\rangle$\Comment{Use complex inner product}
+        \State$H[i,j]\gets\langle Q[:,i],Q[:,j+1]\rangle$
         \State$Q[:,j+1]\gets Q[:,j+1]-H[i,j]\cdot Q[:,i]$\Comment{Orthogonalise against $Q[:,i]$}
         \EndFor
         \State$H[j+1,j]\gets\|Q[:,j+1]\|_2$
