@@ -22,6 +22,7 @@ def gmres(A, b, m):
             - residuals (numpy.ndarray): Array containing the residual norms at
                                          each iteration.
     """
+
     # Get dimension of the system
     n = len(b)
 
