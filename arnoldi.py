@@ -5,8 +5,8 @@ def arnoldi(A, u, m):
     """Implements the Arnoldi iteration algorithm for Krylov subspaces.
 
     This function performs the Arnoldi iteration to build an orthonormal basis
-    for the Krylov subspace of degree m for the matrix A with starting vector u.
-    It uses the modified Gram-Schmidt process for orthogonalisation.
+    for the Krylov subspace of degree m for the matrix A with starting vector
+    u. It uses the modified Gram-Schmidt process for orthogonalisation.
 
     Args:
         A (numpy.ndarray): A square matrix (of size n x n).
@@ -36,7 +36,7 @@ def arnoldi(A, u, m):
     # Constructing the Krlov subspace
     for j in range(m):
 
-        # Construct the next basis vector (i.e., A * Q_j)
+        # Construct the next basis vector
         Q[:, j + 1] = A @ Q[:, j]
 
         # Orthogonalise the new basis vector against the previous ones

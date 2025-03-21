@@ -22,10 +22,6 @@ def gmres(A, b, m):
             - residuals (numpy.ndarray): Array containing the residual norms at
                                          each iteration.
     """
-
-    # Define the product function
-    matrix_A = lambda x: A @ x
-
     # Get dimension of the system
     n = len(b)
 
@@ -37,7 +33,8 @@ def gmres(A, b, m):
     x0 = np.zeros(n)
 
     # Compute initial residual
-    r0 = b - matrix_A(x0)
+    r0 = b - A @ x0
+
     beta = np.linalg.norm(r0)
 
     # First basis vector is the normalised residual
@@ -47,7 +44,7 @@ def gmres(A, b, m):
     residuals = [beta]
 
     for j in range(m):
-        q = matrix_A(Q[:, j])
+        q = A @ Q[:, j]
 
         # Orthogonalise against previous basis vectors
         for i in range(j + 1):
@@ -55,10 +52,7 @@ def gmres(A, b, m):
             q = q - H[i, j] * Q[:, i]  # Orthogonalise
 
         H[j + 1, j] = np.linalg.norm(q)
-
-        # Avoid division by zero for numerical stability
-        if H[j + 1, j] > 1e-12:
-            Q[:, j + 1] = q / H[j + 1, j]  # Normalise the new basis vector
+        Q[:, j + 1] = q / H[j + 1, j]  # Normalise the new basis vector
 
         # Set up the right-hand side for the least squares problem
         e1 = np.zeros(j + 2)
@@ -66,7 +60,6 @@ def gmres(A, b, m):
 
         # Solve the least squares problem to minimise the residual
         y, residual, rank, s = lstsq(H[: j + 2, : j + 1], e1)
-
         res = np.linalg.norm(beta * e1[: j + 2] - H[: j + 2, : j + 1] @ y)
         residuals.append(res)
 
@@ -112,12 +105,10 @@ def create_vector_b(n):
     return b
 
 
-def run_gmres_experiment():
+def run():
     """Runs the GMRES algorithm for different matrix sizes and plots the
     convergence.
     """
-
-    # Different matrix sizes to test
     n_values = [8, 16, 32, 64, 128, 256]
     plt.figure(figsize=(10, 6))
 
@@ -142,4 +133,4 @@ def run_gmres_experiment():
     plt.savefig("convergence.png")
 
 
-run_gmres_experiment()
+run()
