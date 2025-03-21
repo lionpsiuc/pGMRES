@@ -4,7 +4,7 @@ We present the pseudocode of the Arnoldi iteration algorithm exactly as is given
 
 \begin{algorithm}[H]
     \begin{algorithmic}
-        \Procedure{arnoldi}{$A,u,m,\text{tol}=1\text{E}-8$}
+        \Procedure{arnoldi}{$A,u,m$}
         \State$n\gets\text{length}(u)$
         \State$Q\gets\text{zeros}(n,m+1),\text{with }\verb|dtype=complex|$\Comment{Initialise matrix to hold orthonormal basis vectors}
         \State$H\gets\text{zeros}(m+1,m),\text{with }\verb|dtype=complex|$\Comment{Initialise Hessenberg matrix}
@@ -16,9 +16,6 @@ We present the pseudocode of the Arnoldi iteration algorithm exactly as is given
         \State$Q[:,j+1]\gets Q[:,j+1]-H[i,j]\cdot Q[:,i]$\Comment{Orthogonalise against $Q[:,i]$}
         \EndFor
         \State$H[j+1,j]\gets\|Q[:,j+1]\|_2$
-        \If{$|H[j+1,j]|<\text{tol}$}
-        \State\Return$Q[:,0{:}j+1],H[0{:}j+1,0{:}j+1]$
-        \EndIf
         \State$Q[:,j+1]\gets Q[:,j+1]/H[j+1,j]$
         \EndFor
         \State\Return$Q,H$
