@@ -1,0 +1,30 @@
+{
+  // Editor settings
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.wordWrap": "wordWrapColumn",
+  "editor.wordWrapColumn": 80,
+  //
+  // Explorer settings
+  "explorer.compactFolders": false,
+  //
+  // Formatting settings
+  "[c]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "[h]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "clang-format.executable": "/usr/bin/clang-format",
+  "files.associations": {
+    "*.cc": "cpp",
+    "*.cu": "cpp"
+  },
+  "latex-workshop.formatting.latex": "latexindent"
+}
