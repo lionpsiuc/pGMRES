@@ -1,0 +1,28 @@
+\section{The Arnoldi Iteration}
+
+We present the pseudocode of the Arnoldi iteration algorithm exactly as is given in \citet{arnoldi2025lab}:
+
+\begin{algorithm}[H]
+    \begin{algorithmic}
+        \Procedure{arnoldi}{$A,u,m,\text{tol}=1\text{E}-8$}
+        \State$n\gets\text{length}(u)$
+        \State$Q\gets\text{zeros}(n,m+1),\text{with }\verb|dtype=complex|$\Comment{Initialise matrix to hold orthonormal basis vectors}
+        \State$H\gets\text{zeros}(m+1,m),\text{with }\verb|dtype=complex|$\Comment{Initialise Hessenberg matrix}
+        \State$Q[:,0]\gets u/\|u\|_2$
+        \For{$j=0$ to $m-1$}
+        \State$Q[:,j+1]\gets A\cdot Q[:,j]$
+        \For{$i=0$ to $j$}
+        \State$H[i,j]\gets\langle Q[:,i],Q[:,j+1]\rangle$\Comment{Use complex inner product}
+        \State$Q[:,j+1]\gets Q[:,j+1]-H[i,j]\cdot Q[:,i]$\Comment{Orthogonalise against $Q[:,i]$}
+        \EndFor
+        \State$H[j+1,j]\gets\|Q[:,j+1]\|_2$
+        \If{$|H[j+1,j]|<\text{tol}$}
+        \State\Return$Q[:,0{:}j+1],H[0{:}j+1,0{:}j+1]$
+        \EndIf
+        \State$Q[:,j+1]\gets Q[:,j+1]/H[j+1,j]$
+        \EndFor
+        \State\Return$Q,H$
+        \EndProcedure
+    \end{algorithmic}
+\end{algorithm}
+
