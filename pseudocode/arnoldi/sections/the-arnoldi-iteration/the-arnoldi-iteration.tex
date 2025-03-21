@@ -1,19 +1,22 @@
 \section{The Arnoldi Iteration}
 
-We present the pseudocode of the Arnoldi iteration algorithm exactly (without the early termination given some level of tolerance) as is given in \citet{arnoldi2025lab}:
+\subsection{Pseudocode}
+
+We base our solution on the explanation given in \citet{arnoldi2025lab}.
 
 \begin{algorithm}[H]
     \begin{algorithmic}
+        \caption{The Arnoldi Iteration}
         \Procedure{arnoldi}{$A,u,m$}
         \State$n\gets\text{length}(u)$
-        \State$Q\gets\text{zeros}(n,m+1)$\Comment{Initialise matrix to hold orthonormal basis vectors}
-        \State$H\gets\text{zeros}(m+1,m)$\Comment{Initialise Hessenberg matrix}
+        \State$Q\gets\text{zeros}(n,m+1)$
+        \State$H\gets\text{zeros}(m+1,m)$
         \State$Q[:,0]\gets u/\|u\|_2$
         \For{$j=0$ to $m-1$}
         \State$Q[:,j+1]\gets A\cdot Q[:,j]$
         \For{$i=0$ to $j$}
         \State$H[i,j]\gets\langle Q[:,i],Q[:,j+1]\rangle$
-        \State$Q[:,j+1]\gets Q[:,j+1]-H[i,j]\cdot Q[:,i]$\Comment{Orthogonalise against $Q[:,i]$}
+        \State$Q[:,j+1]\gets Q[:,j+1]-H[i,j]\cdot Q[:,i]$
         \EndFor
         \State$H[j+1,j]\gets\|Q[:,j+1]\|_2$
         \State$Q[:,j+1]\gets Q[:,j+1]/H[j+1,j]$
@@ -22,4 +25,3 @@ We present the pseudocode of the Arnoldi iteration algorithm exactly (without th
         \EndProcedure
     \end{algorithmic}
 \end{algorithm}
-
