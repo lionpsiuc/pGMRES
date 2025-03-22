@@ -84,10 +84,5 @@ b = np.array(
 # Perform the Arnoldi iteration
 Q, H = arnoldi(A, b, 9)
 
-# Extract the ninth column
-Q_9 = Q[:, 9]
-
 # Print the results
-print(Q_9)
-print("\nShape of Q:", Q.shape)
-print("Shape of H:", H.shape)
+print(Q)
