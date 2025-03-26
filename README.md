@@ -43,25 +43,25 @@ Given a matrix $A\in\mathbf{R}^{n\times n}$ and an initial unit vector $v_1$, th
 
     - Initialise the first basis vector where $b$ is the initial residual or given starting vector:
 
-    ```math
-    v_1=\frac{b}{\|b\|_2}.
-    ```
+```math
+v_1=\frac{b}{\|b\|_2}.
+```
 
 2. **Arnoldi Iteration (i.e., for $j=1,\ldots,m$)**:
 
     - **Matrix-Vector Multiplication**: $w_j=Av_j$ (i.e., a candidate vector for the new basis vector).
     - **Modified Gram-Schmidt Orthogonalisation**: For each previously computed $v_i$ (where $i=1,\ldots,j$), compute the projection coefficient $h_{i,j}=\langle w_j,v_i\rangle$ and subtract the projection from $w_j$ to enforce orthogonality:
 
-    ```math
-    w_j=w_j-h_{i,j}v_i.
-    ```
+```math
+w_j=w_j-h_{i,j}v_i.
+```
 
     - **Compute Norm of the Remaining Vector**: $`h_{j+1,j}=\|w_j\|_2`$ and if $h_{j+1,j}=0$, then stop the process.
     - **Normalise the New Basis Vector**: This is obtained by carrying out the following:
 
-    ```math
-    v_{j+1}=\frac{w_j}{h_{j+1,j}}.
-    ```
+```math
+v_{j+1}=\frac{w_j}{h_{j+1,j}}.
+```
 
 The above the results in the relation:
 
@@ -99,16 +99,16 @@ The pseudocode is as follows:
     - **Matrix-Vector Multiplication**: $w_j=Av_j$ (i.e., a candidate vector for the new basis vector).
     - **Modified Gram-Schmidt Orthogonalisation**: For each previously computed $v_i$ (where $i=1,\ldots,j$), compute the projection coefficient $h_{i,j}=\langle w_j,v_i\rangle$ and subtract the projection from $w_j$ to enforce orthogonality:
 
-    ```math
-    w_j=w_j-h_{i,j}v_i.
-    ```
+```math
+w_j=w_j-h_{i,j}v_i.
+```
 
     - **Compute Norm of the Remaining Vector**: $`h_{j+1,j}=\|w_j\|_2`$ and if $h_{j+1,j}=0$, then stop the process.
     - **Normalise the New Basis Vector**: This is obtained by carrying out the following:
 
-    ```math
-    v_{j+1}=\frac{w_j}{h_{j+1,j}}.
-    ```
+```math
+v_{j+1}=\frac{w_j}{h_{j+1,j}}.
+```
 
 > Note that the above step is an exact copy of the Arnoldi algorithm. As such, carrying out the above results in the same relation we have seen before (i.e., $AQ_m=Q_{m+1}H_m$).
 
@@ -116,9 +116,9 @@ The pseudocode is as follows:
 
     - Define the Givens rotation matrices $\Omega_i$ to eliminate the subdiagonal entries of $H_m$. Each rotation is defined as
 
-    ```math
-    \Omega_i=\begin{bmatrix}1&&&&&\\&\ddots&&&&\\&&c_i&s_i&&\\&&-s_i&c_i&&\\&&&&\ddots&\\&&&&&1\end{bmatrix},$$ where: $$c_i=\frac{h_{i,i}}{\sqrt{h_{i,i}^2+h{i+1,i}^2}},\ s_i=\frac{h_{i+1,i}}{\sqrt{h_{i,i}^2+h{i+1,i}^2}}.
-    ```
+```math
+\Omega_i=\begin{bmatrix}1&&&&&\\&\ddots&&&&\\&&c_i&s_i&&\\&&-s_i&c_i&&\\&&&&\ddots&\\&&&&&1\end{bmatrix},$$ where: $$c_i=\frac{h_{i,i}}{\sqrt{h_{i,i}^2+h{i+1,i}^2}},\ s_i=\frac{h_{i+1,i}}{\sqrt{h_{i,i}^2+h{i+1,i}^2}}.
+```
 
     - Apply each $\Omega_i$ to both $H_m$ and the transformed right-hand side vector $g$ to obtain and upper triangular system.
 
