@@ -14,9 +14,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-double **V_global = NULL;
-double **H_global = NULL;
-
 /**
  * @brief Allocates memory for a matrix.
  *
@@ -102,17 +99,11 @@ void mvm(double **A, double *v, double *result, int n) {
  * @param[in] m Number of Arnoldi iterations.
  */
 void arnoldi(double **A, double *v1, int m) {
-  int n = 10;             // Matrix size
-  if (V_global != NULL) { // Free memory if it was allocated before
-    free_matrix(V_global, n);
-  }
-  if (H_global != NULL) { // Free memory if it was allocated before
-    free_matrix(H_global, m);
-  }
+  int n = 10; // Matrix size
 
   // Allocate memory for orthonormal basis matrix and Hessenberg matrix
-  V_global = allocate_matrix(n, m + 1);
-  H_global = allocate_matrix(m + 1, m);
+  double **V_global = allocate_matrix(n, m + 1);
+  double **H_global = allocate_matrix(m + 1, m);
 
   // Allocate memory for intermediate results as per the pseudocode
   double *w = (double *)malloc(n * sizeof(double));
