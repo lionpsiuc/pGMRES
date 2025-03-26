@@ -50,12 +50,7 @@ v_1=\frac{b}{\|b\|_2}.
 2. **Arnoldi Iteration (i.e., for $j=1,\ldots,m$)**:
 
     - **Matrix-Vector Multiplication**: $w_j=Av_j$ (i.e., a candidate vector for the new basis vector).
-    - **Modified Gram-Schmidt Orthogonalisation**: For each previously computed $v_i$ (where $i=1,\ldots,j$), compute the projection coefficient $h_{i,j}=\langle w_j,v_i\rangle$ and subtract the projection from $w_j$ to enforce orthogonality:
-
-```math
-w_j=w_j-h_{i,j}v_i.
-```
-
+    - **Modified Gram-Schmidt Orthogonalisation**: For each previously computed $v_i$ (where $i=1,\ldots,j$), compute the projection coefficient $h_{i,j}=\langle w_j,v_i\rangle$ and subtract the projection from $w_j$ to enforce orthogonality (i.e., $w_j=w_j-h_{i,j}v_i$).
     - **Compute Norm of the Remaining Vector**: $`h_{j+1,j}=\|w_j\|_2`$ and if $h_{j+1,j}=0$, then stop the process.
     - **Normalise the New Basis Vector**: This is obtained by carrying out the following:
 
@@ -68,6 +63,7 @@ The above the results in the relation:
 ```math
 AQ_m=Q_{m+1}H_m,
 ```
+
 where:
 
 - $Q_m=[v_1\ v_2\ \ldots\ v_m]$ is an orthonormal basis of the Krylov subspace.
@@ -97,12 +93,7 @@ The pseudocode is as follows:
 2. **Arnoldi Iteration (i.e., for $j=1,\ldots,m$)**:
 
     - **Matrix-Vector Multiplication**: $w_j=Av_j$ (i.e., a candidate vector for the new basis vector).
-    - **Modified Gram-Schmidt Orthogonalisation**: For each previously computed $v_i$ (where $i=1,\ldots,j$), compute the projection coefficient $h_{i,j}=\langle w_j,v_i\rangle$ and subtract the projection from $w_j$ to enforce orthogonality:
-
-```math
-w_j=w_j-h_{i,j}v_i.
-```
-
+    - **Modified Gram-Schmidt Orthogonalisation**: For each previously computed $v_i$ (where $i=1,\ldots,j$), compute the projection coefficient $h_{i,j}=\langle w_j,v_i\rangle$ and subtract the projection from $w_j$ to enforce orthogonality (i.e., $w_j=w_j-h_{i,j}v_i$).
     - **Compute Norm of the Remaining Vector**: $`h_{j+1,j}=\|w_j\|_2`$ and if $h_{j+1,j}=0$, then stop the process.
     - **Normalise the New Basis Vector**: This is obtained by carrying out the following:
 
@@ -110,17 +101,15 @@ w_j=w_j-h_{i,j}v_i.
 v_{j+1}=\frac{w_j}{h_{j+1,j}}.
 ```
 
-> Note that the above step is an exact copy of the Arnoldi algorithm. As such, carrying out the above results in the same relation we have seen before (i.e., $AQ_m=Q_{m+1}H_m$).
+> Note that the above step is an exact copy of the Arnoldi algorithm. As such, carrying out the above results in the same relation we have seen before.
 
 3. **Apply Givens Rotations to Transform $H_m$ into an Upper Triangular System**:
 
-    - Define the Givens rotation matrices $\Omega_i$ to eliminate the subdiagonal entries of $H_m$. Each rotation is defined as
+    - Define the Givens rotation matrices $\Omega_i$ to eliminate the subdiagonal entries of $H_m$. Each $\Omega_i$ is applied to both $H_m$ and the transformed right-hand side vector $g$ to obtain an upper triangular system. The matrix is defined as follows:
 
 ```math
-\Omega_i=\begin{bmatrix}1&&&&&\\&\ddots&&&&\\&&c_i&s_i&&\\&&-s_i&c_i&&\\&&&&\ddots&\\&&&&&1\end{bmatrix},$$ where: $$c_i=\frac{h_{i,i}}{\sqrt{h_{i,i}^2+h{i+1,i}^2}},\ s_i=\frac{h_{i+1,i}}{\sqrt{h_{i,i}^2+h{i+1,i}^2}}.
+\Omega_i=\begin{bmatrix}1&&&&&\\&\ddots&&&&\\&&c_i&s_i&&\\&&-s_i&c_i&&\\&&&&\ddots&\\&&&&&1\end{bmatrix}\text{ where }c_i=\frac{h_{i,i}}{\sqrt{h_{i,i}^2+h{i+1,i}^2}}\text{ and }s_i=\frac{h_{i+1,i}}{\sqrt{h_{i,i}^2+h{i+1,i}^2}}.
 ```
-
-    - Apply each $\Omega_i$ to both $H_m$ and the transformed right-hand side vector $g$ to obtain and upper triangular system.
 
 4. **Solve the Least-Squares Problem**:
 
