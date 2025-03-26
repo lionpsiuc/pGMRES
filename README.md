@@ -1,6 +1,6 @@
 # Case Studies in High-Performance Computing
 
-## Assignment 1 - Kyrlov Subspace Methods and GMRES
+## Assignment 2 - Kyrlov Subspace Methods and GMRES
 
 ### Mathematical Background
 
@@ -69,7 +69,7 @@ where:
 - $Q_m=[v_1\ v_2\ \ldots\ v_m]$ is an orthonormal basis of the Krylov subspace.
 - $H_m$ is an $(m+1)\times m$ upper Hessenberg matrix containing the computed $h_{i,j}$ coefficients.
 
-#### Generalised Minimal Residual Algorithm
+#### GMRES
 
 GMRES seeks the approximate solution $x_m$ in the Krylov subspace by minimising the residual norm:
 
@@ -118,3 +118,90 @@ v_{j+1}=\frac{w_j}{h_{j+1,j}}.
 5. **Compute the Final Solution Approximation**:
 
     - Final solution is computed using $x_m=x_0+Q_my_m$.
+
+### Arnoldi Iteration Implementation
+
+#### How the Implementation Follows the Mathematical Background
+
+We explain how `arnoldi.c` follows the mathematical background described above:
+
+1. **Initialisation of the First Basis Vector**:
+
+    - **Normalisation**: The code begins by normalising the input vector `v1`. `double v1_norm = norm(v1, n)` calculates the Euclidean norm of `v1`. Then, each element of the first Arnoldi vector is set as `V_global[i][0] = v1[i] / v1_norm`.
+
+2. **Matrix-Vector Multiplication and Orthogonalisation**:
+
+    - **Candidate Vector Computation**: We use `mvm` to multiply the matrix `A` with the current basis vector (extracted as `v_j` from `V_global[][j]`) to compute the candidate vector `w` (i.e., `mvm(A, v_j, w, n)`) over `j` from `0` to `j < m`.
+
+    - **Modified Gram–Schmidt Process**: Within the same iteration, a nested loop (over `i` from `0` to `j`, inclusive) calculates the projection coefficients `H_global[i][j] = dot_product(w, v_i, n)`, where `v_i` is taken from `V_global[][i]`. Then, the candidate vector `w` is updated by subtracting the projection:
+
+        ```c
+        for (int k = 0; k < n; k++) {
+          w[k] -= H_global[i][j] * v_i[k];
+        }
+        ```
+
+3. **Normalisation and Basis Extension**:
+
+    - **Computing the Norm**: After orthogonalisation, the code computes the norm of `w` (i.e., `H_global[j + 1][j] = norm(w, n)`). If this norm is non-zero, the candidate vector is normalised, producing the new basis vector $v_{j+1}$.
+
+### Serial GMRES Algorithm Implementation
+
+#### How the Implementation Follows the Mathematical Background
+
+We explain how `gmres.c` follows the mathematical background described above:
+
+1. **Initialisation and Residual Computation**:
+
+    - **Setting the Initial Guess**: The algorithm starts with an initial guess $x_0=0$.
+    - **Computing the Residual**: The residual $r_0=b-Ax_0$ is computed. Its norm is then calculated and used to form the first Krylov vector `V[i][0] = r[i] / beta`.
+
+2. **Building the Krylov Subspace via Arnoldi Iteration**:
+
+    - **Orthogonal Basis Generation**: Similar to `arnoldi.c`, the code constructs the Krylov subspace by iterating over `j` from `0` to `j < m`. This loop produces both the orthonormal basis `V` and the Hessenberg matrix `H` by following the modified Gram–Schmidt process.
+
+3. **Givens Rotations for Least-Squares Problem**:
+
+    - **Eliminating Subdiagonal Elements**: To solve the least-squares problem, the implementation applies Givens rotations. In the code, after updating `H` for the current column, previously computed rotations are applied and then new rotation parameters are computed which transform the Hessenberg matrix into an upper triangular form. The code is as follows:
+
+        ```c
+        // Apply previously computed rotations
+        for (int i = 0; i < j; i++) {
+          double temp = c[i] * H[i][j] + s[i] * H[i+1][j];
+          H[i+1][j] = -s[i] * H[i][j] + c[i] * H[i+1][j];
+          H[i][j] = temp;
+        }
+
+        // Compute new Givens rotation
+        double denom = sqrt(H[j][j]*H[j][j] + H[j+1][j]*H[j+1][j]);
+        c[j] = H[j][j] / denom;
+        s[j] = H[j+1][j] / denom;
+        ```
+
+4. **Solving the Least-Squares Problem and Updating the Solution**:
+
+    - **Back Substitution**: Once the rotated Hessenberg matrix is ready, the code solves the triangular system:
+
+        ```c
+        for (int i = used_iters - 1; i >= 0; i--) {
+          double sum = g[i];
+          for (int k = i + 1; k < used_iters; k++) {
+            sum -= H[i][k] * y[k];
+          }
+          y[i] = sum / H[i][i];
+        }
+        ```
+
+    - **Final Approximation**: The approximate solution is updated by:
+
+        ```c
+        for (int i = 0; i < n; i++) {
+          for (int col = 0; col < used_iters; col++) {
+            x[i] += V[i][col] * y[col];
+          }
+        }
+        ```
+
+5. **Residual History and Verification**:
+
+    - **Monitoring Convergence**: At each iteration, the updated residual norm is stored in the array `residual_history`, which allows for plotting $`\|r_k\|_2/\|b\|_2`$ against the iteration count.
