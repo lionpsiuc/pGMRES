@@ -1,5 +1,5 @@
 /**
- * @file algorithm-6.9.c
+ * @file gmres.c
  *
  * @brief Implementation of the GMRES algorithm.
  *
@@ -123,22 +123,22 @@ double *gmres(double **A, double *b, int n, int m, double *residual_history) {
   free(r);
   double **H = allocate_matrix(m + 1, m);
 
-  // Define the Givens rotation 'matrices' as described in 6.5.3 of Iterative
-  // Methods for Sparse Linear Systems, 2nd Ed., Yousef Saad
+  // Define the Givens rotation matrices (here, we only need to store scalars
+  // since it is enough) as described in 6.5.3 Practical Implementation Issues
+  // of Iterative Methods for Sparse Linear Systems, 2nd Ed., Yousef Saad
   double *c = (double *)calloc(m, sizeof(double));
   double *s = (double *)calloc(m, sizeof(double));
 
-  // This is the g vector as in 6.5.3
+  // This is the g vector as in 6.5.3 Practical Implementation Issues
   double *g = (double *)calloc(m + 1, sizeof(double));
 
   g[0] = beta; // First entry is just beta
 
   // 3. For j = 1, 2, ..., m Do:
-  int j;
+  int j; // Needed for recording how many iterations we have completed
   for (j = 0; j < m; j++) {
-
-    double *w = (double *)malloc(n * sizeof(double));
     double *v_j = (double *)malloc(n * sizeof(double));
+    double *w = (double *)malloc(n * sizeof(double));
     for (int i = 0; i < n; i++) {
       v_j[i] = V[i][j]; // Extract v_j from V
     }
@@ -147,7 +147,6 @@ double *gmres(double **A, double *b, int n, int m, double *residual_history) {
 
     // 5. For i = 1, ..., j Do:
     for (int i = 0; i <= j; i++) {
-
       double *v_i = (double *)malloc(n * sizeof(double));
       for (int k = 0; k < n; k++) {
         v_i[k] = V[k][i];
@@ -212,21 +211,22 @@ double *gmres(double **A, double *b, int n, int m, double *residual_history) {
     for (int k = i + 1; k < used_iters; k++) {
       sum -= H[i][k] * y[k];
     }
-    y[i] = sum / H[i][i]; // 11. Compute y_m the minimizer of ||beta * e_1 -
+    y[i] = sum / H[i][i]; // 12. Compute y_m the minimizer of ||beta * e_1 -
                           // bar{H}_m * y||_2 = ||bar{g}_m - bar{R}_m * y||_2
   }
 
+  // 11. x_m = x_0 + V_m * y_m
   for (int i = 0; i < n; i++) {
     for (int col = 0; col < used_iters; col++) {
-      x[i] += V[i][col] * y[col]; // 11. x_m = x_0 + V_m * y_m
+      x[i] += V[i][col] * y[col];
     }
   }
 
   // Free allocated resources
-  free(y);
-  free(g);
   free(c);
+  free(g);
   free(s);
+  free(y);
   free_matrix(H, m + 1);
   free_matrix(V, n);
 
@@ -284,13 +284,12 @@ int main() {
     }
 
     // Clean up
-    free(x);
-    free(res_history);
     free(b);
+    free(res_history);
+    free(x);
     free_matrix(A, n);
   }
-
   fclose(fp);
-  printf("Done\n");
+  printf("Wrote residual history to file\n");
   return 0;
 }

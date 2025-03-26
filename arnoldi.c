@@ -1,5 +1,5 @@
 /**
- * @file algorithm-6.2.c
+ * @file arnoldi.c
  *
  * @brief Implementation of Arnoldi's algorithm, as per the pseudocode given in
  *        Algorithm 6.2: Arnoldi-Modified Gram-Schmidt, within Iterative Methods
@@ -14,8 +14,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-double **V_global = NULL;
 double **H_global = NULL;
+double **V_global = NULL;
 
 /**
  * @brief Allocates memory for a matrix.
@@ -103,24 +103,23 @@ void mvm(double **A, double *v, double *result, int n) {
  */
 void arnoldi(double **A, double *v1, int m) {
   int n = 10;             // Matrix size
-  if (V_global != NULL) { // Free memory if it was allocated before
-    free_matrix(V_global, n);
-  }
   if (H_global != NULL) { // Free memory if it was allocated before
     free_matrix(H_global, m);
   }
+  if (V_global != NULL) { // Free memory if it was allocated before
+    free_matrix(V_global, n);
+  }
 
-  // Allocate memory for orthonormal basis matrix and Hessenberg matrix
-  V_global = allocate_matrix(n, m + 1);
+  // Allocate memory for orthonormal basis and Hessenberg matrices
   H_global = allocate_matrix(m + 1, m);
+  V_global = allocate_matrix(n, m + 1);
 
   // Allocate memory for intermediate results as per the pseudocode
   double *w = (double *)malloc(n * sizeof(double));
 
-  // 1. Choose a vector v_1 of norm 1
   double v1_norm = norm(v1, n);
   for (int i = 0; i < n; i++) {
-    V_global[i][0] = v1[i] / v1_norm;
+    V_global[i][0] = v1[i] / v1_norm; // 1. Choose a vector v_1 of norm 1
   }
 
   // 2. For j = 1, 2, ..., m Do:
@@ -132,10 +131,8 @@ void arnoldi(double **A, double *v1, int m) {
       v_j[i] = V_global[i][j];
     }
 
-    // 3. Compute w_j := A * v_j
-    mvm(A, v_j, w, n);
-
-    free(v_j); // Free memory for v_j
+    mvm(A, v_j, w, n); // 3. Compute w_j := A * v_j
+    free(v_j);         // Free memory for v_j
 
     // 4. For i = 1, ..., j Do:
     for (int i = 0; i <= j; i++) {
@@ -146,8 +143,8 @@ void arnoldi(double **A, double *v1, int m) {
         v_i[k] = V_global[k][i];
       }
 
-      // 5. Compute h_{i, j} = (w_j, v_i)
-      H_global[i][j] = dot_product(w, v_i, n);
+      H_global[i][j] =
+          dot_product(w, v_i, n); // 5. Compute h_{i, j} = (w_j, v_i)
 
       // 6. w_j := w_j - h_{i, j} * v_i
       for (int k = 0; k < n; k++) {
@@ -157,8 +154,7 @@ void arnoldi(double **A, double *v1, int m) {
       free(v_i);
     }
 
-    // 8. h_{j + 1, j} = ||w_j||_2
-    H_global[j + 1][j] = norm(w, n);
+    H_global[j + 1][j] = norm(w, n); // 8. h_{j + 1, j} = ||w_j||_2
 
     // 8: If h_{j + 1, j} = 0 Stop
     if (fabs(H_global[j + 1][j]) < 1e-10) {
@@ -196,7 +192,6 @@ int main() {
       {4, 4, 2, 1, 7, 4, 2, 2, 4, 5}, {4, 2, 8, 6, 6, 5, 2, 1, 1, 2},
       {2, 8, 9, 5, 2, 9, 4, 7, 3, 3}, {9, 3, 2, 2, 7, 3, 4, 8, 7, 7},
       {9, 1, 9, 3, 3, 1, 2, 7, 7, 1}, {9, 3, 2, 2, 6, 4, 4, 7, 3, 5}};
-
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
       A[i][j] = A_data[i][j];
@@ -213,7 +208,6 @@ int main() {
                         0.645280108318073,  -0.085488474462339,
                         -0.623679022063185, -0.465240896342741,
                         2.382909057772335,  -0.120465395885881};
-
   for (int i = 0; i < n; i++) {
     v1[i] = v1_data[i];
   }
@@ -231,7 +225,7 @@ int main() {
 
   printf("\n");
 
-  // Print the Hessenberg matrix H
+  // Print the Hessenberg matrix
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
       printf("%9.5f ", H_global[i][j]);
