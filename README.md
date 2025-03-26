@@ -108,7 +108,7 @@ v_{j+1}=\frac{w_j}{h_{j+1,j}}.
     - Define the Givens rotation matrices $\Omega_i$ to eliminate the subdiagonal entries of $H_m$. Each $\Omega_i$ is applied to both $H_m$ and the transformed right-hand side vector $g$ to obtain an upper triangular system. The matrix is defined as follows:
 
 ```math
-\Omega_i=\begin{bmatrix}1&&&&&\\&\ddots&&&&\\&&c_i&s_i&&\\&&-s_i&c_i&&\\&&&&\ddots&\\&&&&&1\end{bmatrix}\text{ where }c_i=\frac{h_{i,i}}{\sqrt{h_{i,i}^2+h{i+1,i}^2}}\text{ and }s_i=\frac{h_{i+1,i}}{\sqrt{h_{i,i}^2+h{i+1,i}^2}}.
+\Omega_i=\begin{bmatrix}1&&&&&\\&\ddots&&&&\\&&c_i&s_i&&\\&&-s_i&c_i&&\\&&&&\ddots&\\&&&&&1\end{bmatrix}\text{ where }c_i=\frac{h_{i,i}}{\sqrt{h_{i,i}^2+h_{i+1,i}^2}}\text{ and }s_i=\frac{h_{i+1,i}}{\sqrt{h_{i,i}^2+h_{i+1,i}^2}}.
 ```
 
 4. **Solve the Least-Squares Problem**:
