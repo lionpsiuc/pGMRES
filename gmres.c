@@ -3,7 +3,7 @@
  *
  * @brief Implementation of the GMRES algorithm.
  *
- * This program implements Algorithm 6.9: GMRES from Iterative Methods for
+ * This programme implements Algorithm 6.9: GMRES from Iterative Methods for
  * Sparse Linear Systems, 2nd Ed., Yousef Saad for solving a linear system A * x
  * = b. It utilises the Arnoldi iteration to generate a Krylov subspace and
  * applies Givens rotations to minimise the residual in a least-squares sense.
@@ -241,7 +241,7 @@ double *gmres(double **A, double *b, int n, int m, double *residual_history) {
  * @returns 0 upon successful execution.
  */
 int main() {
-  int sizes[] = {8, 16, 32, 64, 128, 256};
+  int sizes[] = {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
   int num_sizes = sizeof(sizes) / sizeof(sizes[0]);
   FILE *fp = fopen("residuals.csv", "w");
   fprintf(fp, "n,iteration,residual\n");
