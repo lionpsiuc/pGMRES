@@ -252,7 +252,7 @@ double *gmres(double **A, double *b, int n, int m, double *residual_history) {
  * @returns 0 upon successful execution.
  */
 int main() {
-  int sizes[] = {8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
+  int sizes[] = {8, 16, 32, 64, 128, 256};
   int num_sizes = sizeof(sizes) / sizeof(sizes[0]);
   FILE *fp = fopen("residuals.csv", "w");
   fprintf(fp, "n,iteration,residual\n");
