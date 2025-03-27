@@ -296,6 +296,26 @@ We present the graph obtained from running `gmres.c`:
 
 As can be seen above, the number of iterations needed to achieve a given residual tolerance may not increase significantly with $n$. The way in which GMRES works is that for each iteration, a new basis vector is added to the subspace, and then the method computes the best approximation in that newly enlarged space by minimising the residual (i.e., we are removing directions of error in each iteration). By construction, our matrices are essentially scaled-up versions of the previous sizes (i.e., structure and spectral properties remain the same), implying the the number of these directions of error stay roughly the same for larger matrices. As such, the number of iterations required to achieve a given residual tolerance remains roughly the same even as $n$ increases.
 
+#### Stopping Criteria
+
+As per our implementation (i.e., the pseudocode from Iterative Methods for Sparse Linear Systems, 2nd Ed., Yousef Saad), the stopping criteria we employ relies on when the computed value of $h_{j+1,j}$ becomes extremely small. This indicates that the Krylov subspace has become invariant under A. From this point on, any further iterations are unlikely to significantly improve our final solution.
+
+For `gmres.c`, we have the following implementation of the above:
+
+```c
+if (fabs(H[j + 1][j]) < 1e-14) {
+  double current_res = fabs(g[j + 1]); // Fill remainder of the residual
+                                       // history with the current residual
+  for (int k = j; k < m; k++) {
+    residual_history[k] = current_res;
+  }
+  free(w);
+  break;
+}
+```
+
+While we are skipping ahead, within `gmres-omp.c` and `gmres-mpi.c` (the parrallelised versions of GMRES using OpenMP and MPI, respectively), we employ the same exact stopping criteria. This is because both pieces of code still follow the pseudocode from Iterative Methods for Sparse Linear Systems, 2nd Ed., Yousef Saad.
+
 ### Parallel GMRES Algorithm Implementation Using OpenMP
 
 In our OpenMP implementation, `gmres-omp.c`, we have modified the serial GMRES code to exploit shared memory parallelism as follows:
