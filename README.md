@@ -14,6 +14,7 @@
 - [Serial GMRES Algorithm Implementation](#serial-gmres-algorithm-implementation)
   - [How the Implementation Follows the Mathematical Background](#how-the-implementation-follows-the-mathematical-background-1)
   - [Graph to Show Convergence of Algorithm](#graph-to-show-convergence-of-algorithm)
+  - [Stopping Criteria](#stopping-criteria)
 - [Parallel GMRES Algorithm Implementation Using OpenMP](#parallel-gmres-algorithm-implementation-using-openmp)
 - [Parallel GMRES Algorithm Implementation Using MPI](#parallel-gmres-algorithm-implementation-using-mpi)
 
