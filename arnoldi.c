@@ -218,7 +218,7 @@ int main() {
   // Print the entire Q matrix which is stored in V_global
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m + 1; j++) {
-      printf("%8.5f ", V_global[i][j]);
+      printf("%9.5f ", V_global[i][j]);
     }
     printf("\n");
   }
@@ -228,7 +228,7 @@ int main() {
   // Print the Hessenberg matrix
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
-      printf("%8.5f ", H_global[i][j]);
+      printf("%9.5f ", H_global[i][j]);
     }
     printf("\n");
   }
