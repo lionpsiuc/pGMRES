@@ -142,11 +142,36 @@ The repository is organised in such a way as to address the requirements of the 
 
     - `arnoldi.c`: Implementation of the Arnoldi algorithm as required by the first question of the assignment. Compile with `gcc arnoldi.c -lm`, run with `./a.out` which outputs the required matrices.
 
-2. **GMRES and Parallel Versions**:
+2. **GMRES Algorithm Implementation**:
 
     - `gmres.c`: Implementation of the GMRES algorithm as required by the second question of the assignment. Compile with `gcc gmres.c -lm`, run with `./a.out` which outputs `gmres-residuals.csv`, and run `python3 plot.py gmres-residuals.csv` to output the convergence plot titled `gmres-residuals.png`.
-    - `gmres-omp.c`: Implementation of the parallelised GMRES algorithm using OpenMP as required by the third question of the assignment. Compile with `gcc gmres-omp.c -fopenmp -lm`, run with `./a.out` which outputs `gmres-omp-residuals.csv`, and run `python3 plot.py gmres-omp-residuals.csv` to output the convergence plot titled `gmres-omp-residuals.png`, if desired.
-    - `gmres-mpi.c`: Implementation of the parallelised GMRES algorithm using MPI as required by the third question of the assignment. Compile with `mpicc gmres-mpi.c -lm`, run with `mpirun -np 8 ./a.out` (change `8` to the desired number of processes) which outputs `gmres-mpi-residuals.csv`, and run `python3 plot.py gmres-mpi-residuals.csv` to output the convergence plot titled `gmres-mpi-residuals.png`, if desired.
+    - `gmres-residuals.csv`: Contains the residuals for each $n$ at each iteration $m$. Note that this is not currently present but can be created by following the above.
+    - `gmres-residuals.png`: Convergence plot as requested.
+
+3. **Parallel Versions of the GMRES Algorithm**:
+
+    - **OpenMP**:
+
+        - `gmres-omp.c`: Implementation of the parallelised GMRES algorithm using OpenMP as required by the third question of the assignment. Compile with `gcc gmres-omp.c -fopenmp -lm`, run with `./a.out` which outputs `gmres-omp-residuals.csv`, and run `python3 plot.py gmres-omp-residuals.csv` to output the convergence plot titled `gmres-omp-residuals.png`, if desired.
+        - `gmres-omp-residuals.csv`: Contains the residuals for each $n$ at each iteration $m$. Note that this is not currently present but can be created by following the above.
+        - `gmres-omp-residuals.png`: Convergence plot as requested. Note that this is not currently present but can be created by following the above.
+
+    - **MPI**:
+
+        - `gmres-mpi.c`: Implementation of the parallelised GMRES algorithm using MPI as required by the third question of the assignment. Compile with `mpicc gmres-mpi.c -lm`, run with `mpirun -np 8 ./a.out` (change `8` to the desired number of processes) which outputs `gmres-mpi-residuals.csv`, and run `python3 plot.py gmres-mpi-residuals.csv` to output the convergence plot titled `gmres-mpi-residuals.png`, if desired.
+        - `gmres-mpi-residuals.csv`: Contains the residuals for each $n$ at each iteration $m$. Note that this is not currently present but can be created by following the above.
+        - `gmres-mpi-residuals.png`: Convergence plot as requested. Note that this is not currently present but can be created by following the above.
+
+4. **Other**:
+
+    - `mvm.pdf`: File with a concrete example explaining how we parallelised the matrix-vector multiplication using MPI (i.e., how we split the operations across processes along with the distribution of specific data points from one process to another).
+    - `plot.py`: Takes in a `.csv` file and outputs its corresponding `.png` convergence plot.
+
+Finally, in order to clean up all residual files, please run the following:
+
+```bash
+rm -f a.out gmres-mpi-residuals.csv gmres-mpi-residuals.png gmres-omp-residuals.csv gmres-omp-residuals.png gmres-residuals.csv
+```
 
 ### Arnoldi Iteration Implementation
 
