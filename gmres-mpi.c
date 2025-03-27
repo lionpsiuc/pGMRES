@@ -365,11 +365,11 @@ int main(int argc, char *argv[]) {
       // Print first five and last five values of solution vector
       printf("For n = %d:\n", n);
       for (int i = 0; i < 2; i++) {
-        printf("%.15e ", x[i]);
+        printf("%.15e ", global_x[i]);
       }
       printf("... ");
       for (int i = n - 2; i < n; i++) {
-        printf("%.15e ", x[i]);
+        printf("%.15e ", global_x[i]);
       }
       printf("\n\n");
 
