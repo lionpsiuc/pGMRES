@@ -252,7 +252,7 @@ double *gmres(double *b, int local_n, int n, int m, double *residual_history) {
     residual_history[j] = fabs(g[j + 1]);
   }
 
-  int used_iters = (j < m) ? j : m;
+  int used_iters = (j < m) ? j + 1 : m;
 
   // Solve the least-squares problem
   double *y = (double *)calloc(used_iters, sizeof(double));
@@ -351,6 +351,15 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    // Gather the complete solution on the root process
+    double *global_x = NULL;
+    if (my_rank == 0) {
+      global_x = (double *)malloc(n * sizeof(double));
+    }
+
+    // Gather all local solutions on the root process
+    MPI_Gather(x, local_n, MPI_DOUBLE, global_x, local_n, MPI_DOUBLE, 0, comm);
+
     if (my_rank == 0) {
 
       // Print first five and last five values of solution vector
@@ -363,6 +372,8 @@ int main(int argc, char *argv[]) {
         printf("%.15e ", x[i]);
       }
       printf("\n\n");
+
+      free(global_x);
     }
 
     // Clean up
