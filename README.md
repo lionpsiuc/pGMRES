@@ -241,3 +241,90 @@ We present the graph obtained from running `gmres.c`:
 ![Graph showing the convergence of the algorithm](gmres-residuals.png)
 
 As can be seen above, the number of iterations needed to achieve a given residual tolerance may not increase significantly with $n$. The way in which GMRES works is that for each iteration, a new basis vector is added to the subspace, and then the method computes the best approximation in that newly enlarged space by minimising the residual (i.e., we are removing directions of error in each iteration). By construction, our matrices are essentially scaled-up versions of the previous sizes (i.e., structure and spectral properties remain the same), implying the the number of these directions of error stay roughly the same for larger matrices. As such, the number of iterations required to achieve a given residual tolerance remains roughly the same even as $n$ increases.
+
+### Parallel GMRES Algorithm Implementation Using OpenMP
+
+In our OpenMP implementation, `gmres-omp.c`, we have modified the serial GMRES code to exploit shared memory parallelism as follows:
+
+1. **Parallelising Compute-Intensive Loops**:
+
+    - **Dot Product Calculation**: In the `dot_product` function, the loop that sums up products is parallelised with `#pragma omp parallel for reduction(+ : sum)`. This directive divides the loop iterations among available threads, with a reduction clause to safely combine each thread's partial sum. Since the dot product is a sum over independent multiplications, this approach is both safe and efficient.
+    - **Matrix-Vector Multiplication**: The `mvm` function uses `#pragma omp parallel for` to parallelise the outer loop over rows. Each row computation is independent, so this allows for concurrent computation of each element in the result vector.
+
+2. **Parallelising Initialisation and Vector Updates**:
+
+    - **Residual and Arnoldi Basis Initialisation**: When initialising the residual vector `r` and the first Arnoldi vector in `V`, we use `#pragma omp parallel for`. These loops have independent iterations (each component of `r` or `V[i][0]` is computed without interdependency), making them ideal for parallel execution.
+
+3. **Parallelism in the Arnoldi Iteration**:
+
+    - **Inner Loop Operations**: Within the GMRES function, during the Arnoldi iteration, we extract the current vector `v_j` and copy its components into a temporary array. This copying is parallelised because each element is handled independently. Likewise, the inner loops in the Modified Gram–Schmidt process that update the candidate vector `w` are parallelised with `#pragma omp parallel for` since each subtraction operation on different indices is independent.
+
+    - **Why Not the Outer Loop**: The outer loop over the iteration index `j` remains sequential. Each iteration of the Arnoldi process depends on the previous iterations (e.g., new basis vectors and the updated Hessenberg matrix are computed sequentially). Thus, parallelising this loop would lead to race conditions and incorrect results.
+
+In terms of a possible test for correctness, we print out the first and final two values of our solution vector for each $n$. Below, we compare the outputs of `gmres.c` and `gmres-omp.c`, respectively:
+
+```bash
+(cases) ionlipsiuc@Desktop:~/pGMRES$ gcc gmres.c -lm
+(cases) ionlipsiuc@Desktop:~/pGMRES$ ./a.out
+For n = 8:
+-6.207215853978273e-02 -1.241443170795655e-01 ... -3.973115644695532e-01 -3.493435247882855e-01
+
+For n = 16:
+-3.124918424464238e-02 -6.249836848928476e-02 ... -4.306079851104600e-01 -3.576519968762417e-01
+
+For n = 32:
+-1.562499999312079e-02 -3.124999998624158e-02 ... -4.473547906108095e-01 -3.618386976527025e-01
+
+For n = 64:
+-7.812500000000003e-03 -1.562500000000001e-02 ... -4.557282028742821e-01 -3.639320507185712e-01
+
+For n = 128:
+-3.906250000000000e-03 -7.812500000000000e-03 ... -4.599149090060185e-01 -3.649787272515048e-01
+
+For n = 256:
+-1.953125000000000e-03 -3.906250000000001e-03 ... -4.620082620718863e-01 -3.655020655179717e-01
+
+Wrote residual history to file
+(cases) ionlipsiuc@Desktop:~/pGMRES$ gcc gmres-omp.c -fopenmp -lm
+(cases) ionlipsiuc@Desktop:~/pGMRES$ ./a.out
+For n = 8:
+-6.207215853978273e-02 -1.241443170795655e-01 ... -3.973115644695531e-01 -3.493435247882854e-01
+
+For n = 16:
+-3.124918424464240e-02 -6.249836848928481e-02 ... -4.306079851104603e-01 -3.576519968762421e-01
+
+For n = 32:
+-1.562499999312078e-02 -3.124999998624157e-02 ... -4.473547906108097e-01 -3.618386976527027e-01
+
+For n = 64:
+-7.812500000000003e-03 -1.562500000000001e-02 ... -4.557282028742820e-01 -3.639320507185711e-01
+
+For n = 128:
+-3.906250000000001e-03 -7.812500000000003e-03 ... -4.599149090060181e-01 -3.649787272515047e-01
+
+For n = 256:
+-1.953125000000000e-03 -3.906250000000001e-03 ... -4.620082620718869e-01 -3.655020655179716e-01
+
+Wrote residual history to file
+```
+
+From comparing both, we can see that our parallel implementation is indeed correct and preserves the structure of the algorithm. Moreover, we compare some timing results. Note that both programmes were run on a system with a 13th Gen Intel(R) Core(TM) i5-13400F @ 2.50 GHz. We change it so that it runs for $`n=\{1024,2048,4096\}`$ to allow for better comparisons, remove the printing of our solution vector so as to not clutter the terminal, and run our parallelised algorithm using 16 threads. Our results are as follows:
+
+```bash
+(cases) ionlipsiuc@Desktop:~/pGMRES$ gcc gmres.c -lm
+(cases) ionlipsiuc@Desktop:~/pGMRES$ time ./a.out
+Wrote residual history to file
+
+real    2m37.108s
+user    2m38.481s
+sys     0m0.095s
+(cases) ionlipsiuc@Desktop:~/pGMRES$ gcc gmres-omp.c -fopenmp -lm
+(cases) ionlipsiuc@Desktop:~/pGMRES$ time ./a.out
+Wrote residual history to file
+
+real    1m7.356s
+user    17m47.505s
+sys     0m2.055s
+```
+
+We can clearly see that the parallelised version does indeed work, with the serial version taking `2m37.108s` to calculate $m$ iterations for $`n=\{1024,2048,4096\}`$ while the parallelised verion took `1m7.356s` for the same problem.
