@@ -1,6 +1,21 @@
-# Case Studies in High-Performance Computing
+# Case Studies in High-Performance Computing <!-- omit from toc -->
 
-## Assignment 2 - Kyrlov Subspace Methods and GMRES
+## Assignment 2 - Kyrlov Subspace Methods and GMRES <!-- omit from toc -->
+
+- [Mathematical Background](#mathematical-background)
+  - [Notation and Linear System Representation](#notation-and-linear-system-representation)
+  - [Krylov Subspaces](#krylov-subspaces)
+  - [Arnoldi Iteration](#arnoldi-iteration)
+  - [GMRES](#gmres)
+- [Folder Structure and Usage Details](#folder-structure-and-usage-details)
+- [Arnoldi Iteration Implementation](#arnoldi-iteration-implementation)
+  - [How the Implementation Follows the Mathematical Background](#how-the-implementation-follows-the-mathematical-background)
+  - [What is $Q\_9$?](#what-is-q_9)
+- [Serial GMRES Algorithm Implementation](#serial-gmres-algorithm-implementation)
+  - [How the Implementation Follows the Mathematical Background](#how-the-implementation-follows-the-mathematical-background-1)
+  - [Graph to Show Convergence of Algorithm](#graph-to-show-convergence-of-algorithm)
+- [Parallel GMRES Algorithm Implementation Using OpenMP](#parallel-gmres-algorithm-implementation-using-openmp)
+- [Parallel GMRES Algorithm Implementation Using MPI](#parallel-gmres-algorithm-implementation-using-mpi)
 
 ### Mathematical Background
 
@@ -118,6 +133,20 @@ v_{j+1}=\frac{w_j}{h_{j+1,j}}.
 5. **Compute the Final Solution Approximation**:
 
     - Final solution is computed using $x_m=x_0+Q_my_m$.
+
+### Folder Structure and Usage Details
+
+The repository is organised in such a way as to address the requirements of the assignment.
+
+1. **Arnoldi Iteration Implementation**:
+
+    - `arnoldi.c`: Implementation of the Arnoldi algorithm as required by the first question of the assignment. Compile with `gcc arnoldi.c -lm`, run with `./a.out` which outputs the required matrices.
+
+2. **GMRES and Parallel Versions**:
+
+    - `gmres.c`: Implementation of the GMRES algorithm as required by the second question of the assignment. Compile with `gcc gmres.c -lm`, run with `./a.out` which outputs `gmres-residuals.csv`, and run `python3 plot.py gmres-residuals.csv` to output the convergence plot titled `gmres-residuals.png`.
+    - `gmres-omp.c`: Implementation of the parallelised GMRES algorithm using OpenMP as required by the third question of the assignment. Compile with `gcc gmres-omp.c -fopenmp -lm`, run with `./a.out` which outputs `gmres-omp-residuals.csv`, and run `python3 plot.py gmres-omp-residuals.csv` to output the convergence plot titled `gmres-omp-residuals.png`, if desired.
+    - `gmres-mpi.c`: Implementation of the parallelised GMRES algorithm using MPI as required by the third question of the assignment. Compile with `mpicc gmres-mpi.c -lm`, run with `mpirun -np 8 ./a.out` (change `8` to the desired number of processes) which outputs `gmres-mpi-residuals.csv`, and run `python3 plot.py gmres-mpi-residuals.csv` to output the convergence plot titled `gmres-mpi-residuals.png`, if desired.
 
 ### Arnoldi Iteration Implementation
 
@@ -328,3 +357,148 @@ sys     0m2.055s
 ```
 
 We can clearly see that the parallelised version does indeed work, with the serial version taking `2m37.108s` to calculate $m$ iterations for $`n=\{1024,2048,4096\}`$ while the parallelised verion took `1m7.356s` for the same problem.
+
+### Parallel GMRES Algorithm Implementation Using MPI
+
+In our MPI implementation, `gmres-mpi.c`, we have modified the serial GMRES code to exploit distributed memory parallelism as follows:
+
+1. **Transformation of Vector Operations**:
+
+    - **Vector Allocation**: Each process only allocated memory for its local portion:
+
+        ```c
+        int local_n = n / np; // This is then a parameter of our GMRES algorithm
+        double *v = (double *)malloc(local_n * sizeof(double)); // What gets allocated using above input
+        ```
+
+    - **Vector Initialisation**: Each process initialises only its local portion:
+
+        ```c
+        int start_idx = my_rank * local_n;
+        for (int i = 0; i < local_n; i++) {
+          int global_i = start_idx + i;
+          if (global_i < n - 1) {
+            b[i] = (global_i + 1) / (double)n;
+          } else {
+            b[i] = 1.0;
+          }
+        }
+        ```
+
+2. **Parallelisation of Key Mathematical Operations**:
+
+    - **Parallel Dot Product**: We compute local computations on each process and then use `MPI_Allreduce` to combine results. This ensures that every process ends with identical values.
+
+    - **Vector Norm**: This just uses the previous dot product implementation to ensure all processes compute the same norm without additional communication.
+
+    - **Matrix-Vector Multiplication**: This is a complicated distribution of values. It works as follows:
+
+        1. Firstly, we let each process know which portion of the global vector it is responsible for:
+
+            ```c
+            int row_offset = my_rank * local_n;
+            ```
+
+        2. We then use `MPI_Sendrecv` where the current process sends its last element `v[local_n - 1]` to the next process and receives a value from the next process into `recv_down`. The reverse happens with the previous process. The code is as follows:
+
+            ```c
+            // Send up and receive from below
+            if (my_rank < np - 1) {
+              send_down = v[local_n - 1];
+              MPI_Sendrecv(&send_down, 1, MPI_DOUBLE, my_rank + 1, 0, &recv_down, 1,
+                           MPI_DOUBLE, my_rank + 1, 1, comm, &status);
+            }
+
+            // Send down and receive from above
+            if (my_rank > 0) {
+              send_up = v[0];
+              MPI_Sendrecv(&send_up, 1, MPI_DOUBLE, my_rank - 1, 1, &recv_up, 1,
+                           MPI_DOUBLE, my_rank - 1, 0, comm, &status);
+            }
+            ```
+
+        3. Finally, computation is done where the received data is used if required. Please see `mvm.pdf` which offers a concrete example of the whole process.
+
+3. **Parallel Arnoldi Algorithm**:
+
+    - **Basis Vectors**: Each process stores only its portion of each basis vector:
+
+        ```c
+        double **V = allocate_matrix(local_n, m + 1);
+        ```
+
+    - **Hessenberg Matrix**: Every process maintains an identical copy of the full Hessenberg matrix, eliminating communication when solving the least-squares problem:
+
+        ```c
+        double **H = allocate_matrix(m + 1, m); // The same on all processes
+        ```
+
+    - **Orthogonalisation and Givens Rotations**: Parallel dot product from above is used. Moreover, the Givens rotations are computed identically on all processes due to the identical Hessenberg matrices.
+
+As we did with our OpenMP implementation, we print out the first and final two values of our solution vector for each $n$. Below, we compare the outputs of `gmres.c` and `gmres-mpi.c`, respectively:
+
+```bash
+(cases) ionlipsiuc@Desktop:~/pGMRES$ gcc gmres.c -lm
+(cases) ionlipsiuc@Desktop:~/pGMRES$ ./a.out
+For n = 8:
+-6.207215853978273e-02 -1.241443170795655e-01 ... -3.973115644695532e-01 -3.493435247882855e-01
+
+For n = 16:
+-3.124918424464238e-02 -6.249836848928476e-02 ... -4.306079851104600e-01 -3.576519968762417e-01
+
+For n = 32:
+-1.562499999312079e-02 -3.124999998624158e-02 ... -4.473547906108095e-01 -3.618386976527025e-01
+
+For n = 64:
+-7.812500000000003e-03 -1.562500000000001e-02 ... -4.557282028742821e-01 -3.639320507185712e-01
+
+For n = 128:
+-3.906250000000000e-03 -7.812500000000000e-03 ... -4.599149090060185e-01 -3.649787272515048e-01
+
+For n = 256:
+-1.953125000000000e-03 -3.906250000000001e-03 ... -4.620082620718863e-01 -3.655020655179717e-01
+
+Wrote residual history to file
+(cases) ionlipsiuc@Desktop:~/pGMRES$ mpicc gmres-mpi.c -lm
+(cases) ionlipsiuc@Desktop:~/pGMRES$ mpirun -np 8 ./a.out
+For n = 8:
+-6.207215853978273e-02 -1.241443170795655e-01 ... -3.973115644695532e-01 -3.493435247882855e-01
+
+For n = 16:
+-3.124918424464239e-02 -6.249836848928478e-02 ... -4.306079851104601e-01 -3.576519968762417e-01
+
+For n = 32:
+-1.562499999312079e-02 -3.124999998624158e-02 ... -4.473547906108096e-01 -3.618386976527025e-01
+
+For n = 64:
+-7.812499999999992e-03 -1.562499999999999e-02 ... -4.557282028742813e-01 -3.639320507185698e-01
+
+For n = 128:
+-3.906249999999998e-03 -7.812499999999997e-03 ... -4.599149090060183e-01 -3.649787272515045e-01
+
+For n = 256:
+-1.953124999999998e-03 -3.906249999999997e-03 ... -4.620082620718862e-01 -3.655020655179710e-01
+
+Wrote residual history to file
+```
+
+As we can see, the results match. We run a quick timing test again. The same hardware and $n$ values are used, and we use eight cores:
+
+```bash
+(cases) ionlipsiuc@Desktop:~/pGMRES$ gcc gmres.c -lm
+(cases) ionlipsiuc@Desktop:~/pGMRES$ time ./a.out
+Wrote residual history to file
+
+real    2m42.746s
+user    2m42.645s
+sys     0m0.091s
+(cases) ionlipsiuc@Desktop:~/pGMRES$ mpicc gmres-mpi.c -lm
+(cases) ionlipsiuc@Desktop:~/pGMRES$ time mpirun -np 8 ./a.out
+Wrote residual history to file
+
+real    0m19.611s
+user    2m33.554s
+sys     0m0.740s
+```
+
+It runs much quicker than our OpenMP implementation.
