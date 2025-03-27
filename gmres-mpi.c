@@ -93,7 +93,7 @@ double norm(double *v, int local_n) { return sqrt(dot_product(v, v, local_n)); }
  * @param[in] local_n Size of the local part.
  * @param[in] n Global size.
  */
-void mvm_tridiagonal(double *v, double *result, int local_n, int n) {
+void mvm(double *v, double *result, int local_n, int n) {
 
   // Calculate global row offset for this process
   int row_offset = my_rank * local_n;
@@ -191,7 +191,7 @@ double *gmres(double *b, int local_n, int n, int m, double *residual_history) {
     for (int i = 0; i < local_n; i++) {
       v_j[i] = V[i][j]; // Extract v_j from V
     }
-    mvm_tridiagonal(v_j, w, local_n, n); // 4. Compute w_j := A * v_j
+    mvm(v_j, w, local_n, n); // 4. Compute w_j := A * v_j
     free(v_j);
 
     // 5. For i = 1, ..., j Do:
