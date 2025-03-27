@@ -1,12 +1,11 @@
 /**
- * @file pgmres.c
+ * @file gmres-omp.c
  *
- * @brief Implementation of a parallelised GMRES algorithm using OpenMP.
- *
- * This programme implements Algorithm 6.9: GMRES from Iterative Methods for
- * Sparse Linear Systems, 2nd Ed., Yousef Saad for solving a linear system A * x
- * = b. It utilises the Arnoldi iteration to generate a Krylov subspace and
- * applies Givens rotations to minimise the residual in a least-squares sense.
+ * @brief Implementation of a parallelised GMRES algorithm using OpenMP, as per
+ *        the pseudocode given in Algorithm 6.9: GMRES, within Iterative Methods
+ *        for Sparse Linear Systems, 2nd Ed., Yousef Saad, using 6.5.3 Practical
+ *        Implementation Issues as a reference for solving the least-squares
+ *        problem.
  *
  * @author Ion Lipsiuc
  * @date 2025-03-25
@@ -136,7 +135,6 @@ double *gmres(double **A, double *b, int n, int m, double *residual_history) {
 
   // This is the g vector as in 6.5.3 Practical Implementation Issues
   double *g = (double *)calloc(m + 1, sizeof(double));
-
   g[0] = beta; // First entry is just beta
 
   // 3. For j = 1, 2, ..., m Do:
@@ -180,10 +178,12 @@ double *gmres(double **A, double *b, int n, int m, double *residual_history) {
       break;
     }
 
+    // 10. v_{j + 1} = w_j / h_{j + 1, j}
 #pragma omp parallel for
     for (int i = 0; i < n; i++) {
-      V[i][j + 1] = w[i] / H[j + 1][j]; // 10. v_{j + 1} = w_j / h_{j + 1, j}
+      V[i][j + 1] = w[i] / H[j + 1][j];
     }
+
     free(w);
 
     // Apply previously computed rotations
@@ -225,7 +225,7 @@ double *gmres(double **A, double *b, int n, int m, double *residual_history) {
                           // bar{H}_m * y||_2 = ||bar{g}_m - bar{R}_m * y||_2
   }
 
-  // 11. x_m = x_0 + V_m * y_m
+  // 12. x_m = x_0 + V_m * y_m
 #pragma omp parallel for
   for (int i = 0; i < n; i++) {
     for (int col = 0; col < used_iters; col++) {
@@ -254,7 +254,7 @@ double *gmres(double **A, double *b, int n, int m, double *residual_history) {
 int main() {
   int sizes[] = {8, 16, 32, 64, 128, 256};
   int num_sizes = sizeof(sizes) / sizeof(sizes[0]);
-  FILE *fp = fopen("residuals.csv", "w");
+  FILE *fp = fopen("gmres-omp-residuals.csv", "w");
   fprintf(fp, "n,iteration,residual\n");
 
   // Set number of threads
@@ -276,7 +276,7 @@ int main() {
         A[i][i - 1] = 1.0;
     }
 
-    // Allocate input vector
+    // Allocate and initialise input vector
     double *b = (double *)malloc(n * sizeof(double));
 #pragma omp parallel for
     for (int i = 0; i < n - 1; i++) {
@@ -301,6 +301,17 @@ int main() {
       double normalised_res = res_history[j] / norm_b;
       fprintf(fp, "%d,%d,%.15e\n", n, j + 1, normalised_res);
     }
+
+    // Print first five and last five values of solution vector
+    printf("For n = %d:\n", n);
+    for (int i = 0; i < 2; i++) {
+      printf("%.15e ", x[i]);
+    }
+    printf("... ");
+    for (int i = n - 2; i < n; i++) {
+      printf("%.15e ", x[i]);
+    }
+    printf("\n\n");
 
     // Clean up
     free(b);
