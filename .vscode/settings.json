@@ -1,14 +1,9 @@
 {
-  // Editor settings
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
   "editor.wordWrap": "wordWrapColumn",
   "editor.wordWrapColumn": 80,
-  //
-  // Explorer settings
   "explorer.compactFolders": false,
-  //
-  // Formatting settings
   "[c]": {
     "editor.defaultFormatter": "xaver.clang-format"
   },
