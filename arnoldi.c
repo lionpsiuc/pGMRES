@@ -91,14 +91,14 @@ void mvm(double **A, double *v, double *result, int n) {
 }
 
 /**
- * @brief Arnoldi process to generate an orthonormal basis for the Krylov
+ * @brief Arnoldi iteration to generate an orthonormal basis for the Krylov
  *        subspace.
  *
  * The Arnoldi iteration constructs an orthonormal basis for the Krylov subspace
  * and produces an upper Hessenberg matrix.
  *
  * @param[in] A Input square matrix.
- * @param[in] v1 Initial vector which is normalised in the process.
+ * @param[in] v1 Initial vector.
  * @param[in] m Number of Arnoldi iterations.
  */
 void arnoldi(double **A, double *v1, int m) {
@@ -125,7 +125,7 @@ void arnoldi(double **A, double *v1, int m) {
   // 2. For j = 1, 2, ..., m Do:
   for (int j = 0; j < m; j++) {
 
-    // Allocate memory for v_j
+    // Allocate memory for v_j and initialise it
     double *v_j = (double *)malloc(n * sizeof(double));
     for (int i = 0; i < n; i++) {
       v_j[i] = V_global[i][j];
@@ -137,7 +137,7 @@ void arnoldi(double **A, double *v1, int m) {
     // 4. For i = 1, ..., j Do:
     for (int i = 0; i <= j; i++) {
 
-      // Allocate memory for v_i
+      // Allocate memory for v_i and initialise it
       double *v_i = (double *)malloc(n * sizeof(double));
       for (int k = 0; k < n; k++) {
         v_i[k] = V_global[k][i];
@@ -218,7 +218,7 @@ int main() {
   // Print the entire Q matrix which is stored in V_global
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m + 1; j++) {
-      printf("%9.5f ", V_global[i][j]);
+      printf("%8.5f ", V_global[i][j]);
     }
     printf("\n");
   }
@@ -228,7 +228,7 @@ int main() {
   // Print the Hessenberg matrix
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
-      printf("%9.5f ", H_global[i][j]);
+      printf("%8.5f ", H_global[i][j]);
     }
     printf("\n");
   }
