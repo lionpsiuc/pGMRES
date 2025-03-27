@@ -145,6 +145,34 @@ We explain how `arnoldi.c` follows the mathematical background described above:
 
     - **Computing the Norm**: After orthogonalisation, the code computes the norm of `w` (i.e., `H_global[j + 1][j] = norm(w, n)`). If this norm is non-zero, the candidate vector is normalised, producing the new basis vector $v_{j+1}$.
 
+#### What is $Q_9$?
+
+Within Numerical Linear Algebra, Lloyd N. Trefethen and David Bau, III, it is explained that $Q_m$ is the $(m+1)\times n$ matrix of Arnoldi basis vectors, while the Hessenberg matrix is as described in the assignment. As such, after compiling and running `arnoldi.c`, $Q_9$ (and $H_9$) are as follows, respectively:
+
+```bash
+ 0.18712  0.33601 -0.38903  0.48216  0.24153  0.09493 -0.45094 -0.32354  0.15664 -0.26145
+ 0.67536 -0.00241  0.30315  0.19541 -0.61854  0.05935  0.00877 -0.06451 -0.06879 -0.13682
+-0.13724  0.47776  0.16013  0.13079 -0.13918  0.26345 -0.15046  0.68960  0.33806  0.09448
+ 0.28266  0.26267 -0.39588 -0.24550 -0.13407 -0.37407 -0.22160  0.06345 -0.14305  0.63452
+ 0.15939  0.26666 -0.43470 -0.20494 -0.01983 -0.24453  0.45861  0.28467 -0.06380 -0.56294
+-0.02112  0.21068  0.42384 -0.19999  0.05795 -0.62489 -0.11362 -0.21452  0.51012 -0.15012
+-0.15406  0.41873  0.21322  0.53270  0.08401 -0.21363  0.49530 -0.15157 -0.29967  0.24680
+-0.11492  0.46099 -0.02268 -0.44633 -0.20362  0.48149  0.19360 -0.49794  0.11218  0.05706
+ 0.58862  0.03093  0.20494 -0.14157  0.66322  0.22435  0.22301  0.08931  0.12161  0.16684
+-0.02976  0.29248  0.34323 -0.25875  0.17202 -0.00666 -0.41118  0.07510 -0.67418 -0.26447
+
+ 8.23155 18.08508 -0.62318 -3.54844  1.94928 -2.51288 -2.54985 -1.34707  1.57757
+18.16918 36.68921  6.49566 -4.19769  0.49829 -3.65670 -0.95679  0.45944  3.43504
+ 0.00000  9.33676 -2.53375 -0.45179 -1.06807  0.83354  0.20609 -0.28851  0.79665
+ 0.00000  0.00000  7.72870 -1.85316 -6.69675 -2.02562 -1.18707  2.78007  0.48528
+ 0.00000  0.00000  0.00000  4.37359  1.23869  6.71969 -1.37013  3.02072  4.71406
+ 0.00000  0.00000  0.00000  0.00000  3.31024  6.62372  1.41901 -3.43106 -3.93161
+ 0.00000  0.00000  0.00000  0.00000  0.00000  2.25520  1.60799 -0.18068  1.07241
+ 0.00000  0.00000  0.00000  0.00000  0.00000  0.00000  2.70054  2.49950  0.74759
+ 0.00000  0.00000  0.00000  0.00000  0.00000  0.00000  0.00000  6.46468  0.43700
+ 0.00000  0.00000  0.00000  0.00000  0.00000  0.00000  0.00000  0.00000  5.41350
+```
+
 ### Serial GMRES Algorithm Implementation
 
 #### How the Implementation Follows the Mathematical Background
@@ -205,3 +233,11 @@ We explain how `gmres.c` follows the mathematical background described above:
 5. **Residual History and Verification**:
 
     - **Monitoring Convergence**: At each iteration, the updated residual norm is stored in the array `residual_history`, which allows for plotting $`\|r_k\|_2/\|b\|_2`$ against the iteration count.
+
+#### Graph to Show Convergence of Algorithm
+
+We present the graph obtained from running `gmres.c`:
+
+![Graph showing the convergence of the algorithm](gmres-residuals.png)
+
+As can be seen above, the number of iterations needed to achieve a given residual tolerance may not increase significantly with $n$. The way in which GMRES works is that for each iteration, a new basis vector is added to the subspace, and then the method computes the best approximation in that newly enlarged space by minimising the residual (i.e., we are removing directions of error in each iteration). By construction, our matrices are essentially scaled-up versions of the previous sizes (i.e., structure and spectral properties remain the same), implying the the number of these directions of error stay roughly the same for larger matrices. As such, the number of iterations required to achieve a given residual tolerance remains roughly the same even as $n$ increases.
