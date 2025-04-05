@@ -1,25 +1,33 @@
-# This file is the top-most EditorConfig file
+# This is the main EditorConfig file
 root = true
 
-# All files
+# Default settings for all files
 [*]
 charset = utf-8
-insert_final_newline = true
-indent_size = 4
+end_of_line = lf
+indent_size = 2
 indent_style = space
+insert_final_newline = true
+max_line_length = 80
+tab_width = 2
 trim_trailing_whitespace = true
 
-# Bash files
-[*.sh]
-end_of_line = lf
-
-# C, C++, and CUDA
-[*.{c,cpp,cu,h,hpp}]
+# C, C++, and CUDA files
+[*.{c,cpp,cu,cuh,h,hpp}]
 indent_size = 2
+indent_style = space
+tab_width = 2
 
-# JSON
-[*.{json,json5,webmanifest}]
-indent_size = 2
+# Python
+[*.py]
+indent_size = 4
+indent_style = space
+tab_width = 4
+
+# Markdown and JSON
+[*.{md,json}]
+insert_final_newline = true
+trim_trailing_whitespace = false
 
 # Makefiles
 [Makefile]

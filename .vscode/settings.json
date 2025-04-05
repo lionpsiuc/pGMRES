@@ -1,25 +1,23 @@
 {
-  "editor.formatOnSave": true,
-  "editor.tabSize": 2,
-  "editor.wordWrap": "wordWrapColumn",
-  "editor.wordWrapColumn": 80,
-  "explorer.compactFolders": false,
   "[c]": {
     "editor.defaultFormatter": "xaver.clang-format"
   },
   "[cpp]": {
     "editor.defaultFormatter": "xaver.clang-format"
   },
-  "[h]": {
+  "[cuda]": {
     "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "[latex]": {
+    "editor.defaultFormatter": "James-Yu.latex-workshop"
   },
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
-  "clang-format.executable": "/usr/bin/clang-format",
+  "editor.formatOnSave": true,
   "files.associations": {
-    "*.cc": "cpp",
-    "*.cu": "cpp"
+    "*.cu": "cpp",
+    "*.cuh": "cpp"
   },
   "latex-workshop.formatting.latex": "latexindent"
 }

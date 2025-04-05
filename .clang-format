@@ -1,2 +1,59 @@
 BasedOnStyle: LLVM
-AlwaysBreakTemplateDeclarations: Yes
+
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignOperands: true
+AlignTrailingComments: true
+
+AllowShortCaseLabelsOnASingleLine: true
+
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+AlwaysBreakTemplateDeclarations: true
+
+BinPackArguments: true
+BinPackParameters: true
+
+BreakBeforeBraces: Attach
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializersBeforeComma: false
+
+ColumnLimit: 80
+
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+
+IncludeBlocks: Preserve
+IncludeCategories:
+  - Regex: '^<.*\.h>$'
+    Priority: 1
+    SortPriority: 0
+    CaseSensitive: false
+  - Regex: '^".*"$'
+    Priority: 2
+    SortPriority: 0
+    CaseSensitive: false
+IncludeIsMainRegex: '([-_](test|unittest))?$'
+
+IndentCaseLabels: true
+IndentWidth: 2
+IndentWrappedFunctionNames: true
+
+MaxEmptyLinesToKeep: 1
+
+NamespaceIndentation: Inner
+
+PointerAlignment: Left
+
+SortIncludes: true
+
+SpaceAfterCStyleCast: true
+SpaceAfterTemplateKeyword: true
+SpaceBeforeParens: ControlStatements
+
+SpacesInAngles: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+TabWidth: 2
+UseTab: Never
